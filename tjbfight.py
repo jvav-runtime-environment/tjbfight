@@ -1237,8 +1237,8 @@ kright = False
 
 rounds = {
     1 : [Enemy_SXZ(ENEMYIMG_SXZ, (0, 0), groups, 333)],
-    2 : [Enemy_CH(ENEMYIMG_CH, (17, 300), groups, hp=333)],
-    3 : [Enemy_CH(ENEMYIMG_CH, (170, 300), groups, hp=333), Enemy_CH(ENEMYIMG_CH, (220, 170), groups, hp=333), Enemy_CH(ENEMYIMG_CH, (220, 430), groups, hp=333)]
+    2 : [Enemy_CH(ENEMYIMG_CH, (17, 300), groups, 333)],
+    3 : [Enemy_CH(ENEMYIMG_CH, (170, 300), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 170), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 430), groups, 333)]
 }
 
 while running:
