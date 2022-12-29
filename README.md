@@ -12,4 +12,4 @@
 
 a,w,d:分别控制左,上,下
 
-打包的.exe在dist\tjbfight.zip中
+在旁边的Releases中下载
