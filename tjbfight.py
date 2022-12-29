@@ -75,7 +75,10 @@ def change_round(pos):
 
     for i in range(3):
         pos = [random.randint(pos[0]-150, pos[0]+150), random.randint(pos[1]-200, pos[1])]
-        j = random.choice([Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),])
+        j = random.choice([
+            Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
+            Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333)
+            ])
         j.rect.center = pos
         j.exact_pos = pos
         enemies.add(j)
@@ -922,7 +925,7 @@ class HealBullet(Basic_sprite):
         self.speed = 5
         self.a = 0.01
         self.d_a = random.uniform(0.01, 0.02)
-        self.d_r_speed = 0.1
+        self.d_r_speed = 0.3
         self.aim = aim
         self.deg = random.randint(0,360)
         self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
