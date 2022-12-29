@@ -1,6 +1,6 @@
 # TJBFight
 
-一个小游戏:)
+一个小游戏😁
 
 由pygame编写
 
