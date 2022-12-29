@@ -65,7 +65,7 @@ def change_round(pos):
     for i in rounds.keys():
         if i == level:
             for j in rounds[i]:
-                pos = [random.randint(pos[0]-150, pos[0]+150), random.randint(pos[1]-200, pos[1])]
+                pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-400, pos[1])]
                 j.rect.center = pos
                 j.exact_pos = pos
                 enemies.add(j)
@@ -74,7 +74,7 @@ def change_round(pos):
             return
 
     for i in range(2):
-        pos = [random.randint(pos[0]-150, pos[0]+150), random.randint(pos[1]-200, pos[1])]
+        pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-400, pos[1])]
         j = random.choice([
             Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
             Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333)
@@ -1039,7 +1039,7 @@ class Enemy_SXZ(Basic_sprite):
         self.sprite_groups = sprite_groups
 
         #数值
-        self.COMMONATT_MP = 2
+        self.COMMONATT_MP = 2.25
 
     def rdamage(self, type, ammo):
         '''接受伤害'''
