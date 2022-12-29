@@ -1,0 +1,7 @@
+{
+    "python.analysis.typeCheckingMode": "off",
+    "editor.defaultFormatter": "vscode.configuration-editing",
+    "[python]": {
+        "editor.defaultFormatter": "ms-python.python"
+    }
+}
