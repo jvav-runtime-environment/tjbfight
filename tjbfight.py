@@ -73,7 +73,7 @@ def change_round(pos):
                     pclg.add(Particle(random.randint(0, 360), pos, 20, random.uniform(0, 10), 200, (0, 1, 0, 190)))
             return
 
-    for i in range(3):
+    for i in range(2):
         pos = [random.randint(pos[0]-150, pos[0]+150), random.randint(pos[1]-200, pos[1])]
         j = random.choice([
             Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
@@ -1004,7 +1004,7 @@ class Enemy_SXZ(Basic_sprite):
         self.maxhp = hp
         self.mp = 0
         self.maxmp = mp
-        self.mprecovery = 0.5
+        self.mprecovery = 0.4
         self.san = san
         self.maxsan = san
         self.sanrecovery = 0.5
@@ -1039,10 +1039,13 @@ class Enemy_SXZ(Basic_sprite):
         self.sprite_groups = sprite_groups
 
         #数值
-        self.COMMONATT_MP = 1.5
+        self.COMMONATT_MP = 2
 
     def rdamage(self, type, ammo):
         '''接受伤害'''
+
+        ammo *= 1.2
+        ammo = int(ammo)
 
         if self.hp > 0:
 
@@ -1165,7 +1168,7 @@ class Enemy_SXZ(Basic_sprite):
     def AI(self):
         '''自动判断攻击'''
         if self.hp >= self.maxhp * 0.4:
-            if self.mp == self.maxmp:
+            if self.mp >= self.maxmp:
                 self.attacking = True
             elif self.attacking and (self.mp < self.COMMONATT_MP):
                 self.attacking = False
