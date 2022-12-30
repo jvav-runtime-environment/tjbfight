@@ -73,7 +73,7 @@ def change_round(pos):
                     pclg.add(Particle(random.randint(0, 360), pos, 20, random.uniform(0, 10), 200, (0, 1, 0, 190)))
             return
 
-    for i in range(2):
+    for i in range(int(math.sqrt(level*3))):
         pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-400, pos[1])]
         j = random.choice([
             Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
