@@ -59,13 +59,19 @@ def get_mouse_pos():
     mx, my = pygame.mouse.get_pos()
     return (mx+x, my+y)
 
+def get_spawn_enemy(pos):
+    return random.choice([
+            Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
+            Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333)
+            ])
+
 def change_round(pos):
     global rounds, level, enemies, pclg
 
     for i in rounds.keys():
         if i == level:
             for j in rounds[i]:
-                pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-400, pos[1])]
+                pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-300, pos[1])]
                 j.rect.center = pos
                 j.exact_pos = pos
                 enemies.add(j)
@@ -74,14 +80,8 @@ def change_round(pos):
             return
 
     for i in range(int(math.sqrt(level*3))):
-        pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-400, pos[1])]
-        j = random.choice([
-            Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
-            Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333)
-            ])
-        j.rect.center = pos
-        j.exact_pos = pos
-        enemies.add(j)
+        pos = [random.randint(pos[0]-350, pos[0]+350), random.randint(pos[1]-300, pos[1])]
+        enemies.add(get_spawn_enemy(pos))
         for _ in range(25):
             pclg.add(Particle(random.randint(0, 360), pos, 20, random.uniform(0, 10), 200, (0, 1, 0, 190)))
 
