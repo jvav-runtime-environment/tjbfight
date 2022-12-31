@@ -268,18 +268,20 @@ class Particle(pygame.sprite.Sprite):
     def update(self, surf: pygame.surface.Surface):
         '''更新函数'''
 
-        # 位置更新
-        self.exact_pos[0] += self.speed*math.cos(math.radians(self.deg))
-        self.exact_pos[1] -= self.speed*math.sin(math.radians(self.deg))
-        self.rect.center = self.exact_pos
-        self.rect.size = (int(self.size), int(self.size))
-
         # 大小，速度更新
         self.speed -= self.d_speed
         self.size -= self.d_size
 
+        # 位置更新
+        self.exact_pos[0] += self.speed*math.cos(math.radians(self.deg))
+        self.exact_pos[1] -= self.speed*math.sin(math.radians(self.deg))
+        self.rect.size = (self.size, self.size)
+        self.rect.center = self.exact_pos
+        
+
         # 显示
         surf.blit(pygame.transform.scale(self.image, (int(self.size), int(self.size))), self.rect)
+        #pygame.draw.rect(surf, (0,0,0), self.rect, 1)
 
         # 倒计时
         self.time -= 1
@@ -517,7 +519,7 @@ class Player(Basic_sprite):
         self.attack = 10
         self.COMMONATT_MP = 5
         self.SANATT_MP = 1
-        self.PARRY_CD = 40
+        self.PARRY_CD = 16
         self.parry_cd = self.PARRY_CD
         self.speed = 15
         self.overwhelmed = False
@@ -603,7 +605,7 @@ class Player(Basic_sprite):
 
         if self.parry_cd == 1:
             for i in range(50):
-                self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 8, random.uniform(20, 40), 200, (0, 1, 0, 100)))
+                self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 8, 30, 200, (0, 1, 0, 100)))
 
 
         self.v_y += GRAVITY
@@ -657,9 +659,6 @@ class Player(Basic_sprite):
         pygame.draw.rect(surf, (0, 0, 0), (sanbarpos, sanbarsize), 1)
         pygame.draw.rect(surf, (255, 255, 0), ((sanbarpos[0]+1, sanbarpos[1]+1), ((sanbarsize[0]-2)*self.san/self.maxsan, sanbarsize[1]-2)))
 
-        x, y = get_mouse_pos()
-        pygame.draw.arc(surf, (0,255,255), ((x-15,y-15), (30, 30)), math.pi/2-math.pi*(self.parry_cd/self.PARRY_CD)*2, math.pi/2, 10)
-
     def common_att(self):
         '''普通攻击'''
         if not self.overwhelmed:
@@ -677,10 +676,11 @@ class Player(Basic_sprite):
         if self.parry_cd == self.PARRY_CD:
             self.parry_cd = 0
             for i in self.sprite_groups.enemybulletgroup:
-                if get_distance(self.rect.center, i.rect.center) < 250:
+                if get_distance(self.rect.center, i.rect.center) < 180:
                     i.deg = oppo_deg(i.deg)
                     i.r_speed = 0
                     i.d_r_speed = 0
+                    i.enemyg = self.sprite_groups.enemygroup
                     self.sprite_groups.enemybulletgroup.remove(i)
                     self.sprite_groups.bulletgroup.add(i)
 
@@ -699,7 +699,7 @@ class Player(Basic_sprite):
 # ---子弹类---
 
 class Bullet(Basic_sprite):
-    def __init__(self, image, pos, speed, aim, sprite_groups, dmg=10, type=['hp'], time=90):
+    def __init__(self, image, pos, speed, aim, sprite_groups:Groups, dmg=10, type=['hp'], time=90):
         super().__init__(image, pos)
         
         self.image = image
@@ -712,8 +712,9 @@ class Bullet(Basic_sprite):
         self.r_speed = 60
         self.time = time
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.enemygroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
 
         if self.time >= 80:
             self.move_to_aim(self.aim)
@@ -722,7 +723,7 @@ class Bullet(Basic_sprite):
 
         surf.blit(pygame.transform.rotate(self.image, oppo_deg(self.deg)), self.rect)
 
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
             c[0].rdamage(self.type, self.dmg)
@@ -815,8 +816,9 @@ class FireBullet(Bullet):
     def __init__(self, image, pos, speed, aim, sprite_groups, dmg=10, type=['hp'], time=50):
         super().__init__(image, pos, speed, aim, sprite_groups, dmg, type, time)
         self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
+        self.enemyg = sprite_groups.enemygroup
         
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
         if self.time >= 45:
             self.move_to_aim(self.aim)
         else:
@@ -826,7 +828,7 @@ class FireBullet(Bullet):
         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 7, random.uniform(0, 2), 40, (247, 219, 26, 225)))
 
         surf.blit(self.image, self.rect)
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:],c[0].rect.center, deg=135, life=4))
             c[0].rdamage(self.type, self.dmg)
@@ -857,8 +859,9 @@ class EnemyBullet_ch(Basic_sprite):
         self.r_speed = 2
         self.time = time
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.playergroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
         if self.time >= 75:
             self.aim = self.sprite_groups.playergroup.sprites()[0].rect.center
             self.move_to_aim(self.aim)
@@ -868,7 +871,7 @@ class EnemyBullet_ch(Basic_sprite):
 
         surf.blit(self.image, self.rect)
 
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
             c[0].rdamage(self.type, self.dmg)
@@ -899,8 +902,9 @@ class EnemyBullet_sxz(Basic_sprite):
         self.type = type
         self.time = time
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.playergroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
         self.movef()
         self.update_a()
 
@@ -909,7 +913,7 @@ class EnemyBullet_sxz(Basic_sprite):
         else:
             surf.blit(pygame.transform.rotate(self.image, self.deg), self.rect)
 
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
             c[0].rdamage(self.type, self.dmg)
@@ -936,15 +940,16 @@ class EnemyBullet_lefthand(Basic_sprite):
         self.type = type
         self.time = time
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.playergroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
         self.movef()
         self.update_a()
 
-        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 3), 50, (0, 255, 0, 150)))
-        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 3), 30, (0, 255, 0, 215)))
+        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 10, random.uniform(0, 3), 50, (0, 255, 0, 150)))
+        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 10, random.uniform(0, 3), 30, (0, 255, 0, 215)))
 
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
             c[0].rdamage(self.type, self.dmg)
@@ -974,8 +979,9 @@ class HealBullet(Basic_sprite):
         self.r_speed = 1
         self.time = time
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.playergroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
 
         self.aim = self.sprite_groups.playergroup.sprites()[0].rect.center
         self.move_to_aim(self.aim)
@@ -985,7 +991,7 @@ class HealBullet(Basic_sprite):
         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 0.5), 20, (0, 255, 0, 150)))
         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 0.5), 10, (0, 255, 0, 215)))
 
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             #self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
             c[0].rdamage(self.type, self.dmg)
@@ -1013,8 +1019,9 @@ class Runes(Bullet):
         self.rect = self.image.get_rect(center=pos)
         self.speed = speed
         self.sprite_groups = sprite_groups
+        self.enemyg = sprite_groups.enemygroup
 
-    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+    def update(self, surf: pygame.surface.Surface):
         #print(self.rect.center, self.exact_pos)
         self.movef()
         self.update_a()
@@ -1022,7 +1029,7 @@ class Runes(Bullet):
         surf.blit(self.image,self.rect)
         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 10, random.uniform(10, 20), 20, (0, 1, 0, 100)))
     
-        c = pygame.sprite.spritecollide(self, e_group, 0)
+        c = pygame.sprite.spritecollide(self, self.enemyg, 0)
         if c:
             self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:],c[0].rect.center, deg=135, life=4))
             c[0].rdamage(self.type, self.dmg)
@@ -1521,18 +1528,21 @@ while running:
 
     enemies.update(screen)
     playerg.update(screen)
-    bullets.update(enemies, screen)
-    enemybullets.update(playerg, screen)
+    bullets.update(screen)
+    enemybullets.update(screen)
     pclg.update(screen)
     dmgr.update()
+
+    #pygame.draw.circle(screen, (0,0,0), player.rect.center, 200, 1)
+
+    x, y = get_mouse_pos()
+    pygame.draw.arc(screen, (0,255,255), ((x-15,y-15), (30, 30)), math.pi/2-math.pi*(player.parry_cd/player.PARRY_CD)*2, math.pi/2, 10)
 
     x, y = player.rect.center
     x = SCREEN_WIDTH/2 - x
     y = SCREEN_HEIGHT/2 - y + 100
     window.blit(screen, (x, y))
-
-    #window.blit(pygame.transform.scale(screen,(800,600)), (0,0))
-
+    
     pygame.display.flip()
 
 
