@@ -568,6 +568,10 @@ class Player(Basic_sprite):
 
             if 'heal' in type:
                 self.hp += ammo
+                self.maxhp += 5
+                self.attack *= 1.005
+                self.maxmp += 5
+                self.mprecovery += 0.01
                 self.sprite_groups.damagerender.add('+'+str(ammo), self.rect.center,(0, 255, 0), 60, 50)
 
         self.hit = True
@@ -810,7 +814,7 @@ class Changer(Basic_sprite):
 class FireBullet(Bullet):
     def __init__(self, image, pos, speed, aim, sprite_groups, dmg=10, type=['hp'], time=50):
         super().__init__(image, pos, speed, aim, sprite_groups, dmg, type, time)
-        self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
         
     def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
         if self.time >= 45:
@@ -845,7 +849,7 @@ class EnemyBullet_ch(Basic_sprite):
         self.d_r_speed = 1
         self.aim = aim
         self.deg = random.randint(0,360)
-        self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
         self.exact_pos = list(pos)
         font6 = pygame.font.SysFont('宋体',self.dmg*10)
         self.image = font6.render('6', 1, (255,255,255))
@@ -889,7 +893,7 @@ class EnemyBullet_sxz(Basic_sprite):
         self.d_a = 0.3
         self.aim = aim
         self.deg = get_degree(pos, aim)
-        self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
         self.exact_pos = list(pos)
         self.image = image
         self.type = type
@@ -928,7 +932,7 @@ class HealBullet(Basic_sprite):
         self.d_r_speed = 0.3
         self.aim = aim
         self.deg = random.randint(0,360)
-        self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
         self.exact_pos = list(pos)
         self.image = pygame.surface.Surface((1,1))
         self.type = type
@@ -970,7 +974,7 @@ class Runes(Bullet):
         font = pygame.font.SysFont('simhei', 50, True)
         surf = font.render(random.choice(LIST), 1, (0,0,0))
         self.image = surf
-        self.dmg = random.randint(dmg-int(dmg*0.2),dmg+int(dmg*0.2))
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
         self.rect = self.image.get_rect(center=pos)
         self.speed = speed
         self.sprite_groups = sprite_groups
