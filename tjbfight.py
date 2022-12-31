@@ -109,7 +109,7 @@ class Groups():
 # ---定义基本类---
 
 class Basic_sprite(pygame.sprite.Sprite):
-    def __init__(self, img, pos, deg=0):
+    def __init__(self, img, pos, deg=1):
         super().__init__()
         self.image = img
         self.rect = self.image.get_rect(center=pos)
@@ -284,7 +284,6 @@ class Particle(pygame.sprite.Sprite):
         self.time -= 1
         if self.time <= 0:
             self.kill()
-            #self.add(useableparticles)
 
 
 # ---定义敌人类---
@@ -923,6 +922,41 @@ class EnemyBullet_sxz(Basic_sprite):
 
         self.time -= 1
 
+class EnemyBullet_lefthand(Basic_sprite):
+    def __init__(self, pos, speed, deg, sprite_groups:Groups, dmg=10, type=['hp'], time=45):
+        super().__init__(pygame.surface.Surface((1,1)), pos)
+        
+        self.speed = 7
+        self.a = 0.1
+        self.d_a = 0.1
+        self.deg = deg
+        self.dmg = random.randint(int(dmg-int(dmg*0.2)),int(dmg+int(dmg*0.2)))
+        self.exact_pos = list(pos)
+        self.type = type
+        self.time = time
+        self.sprite_groups = sprite_groups
+
+    def update(self, e_group: pygame.sprite.Group, surf: pygame.surface.Surface):
+        self.movef()
+        self.update_a()
+
+        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 3), 50, (0, 255, 0, 150)))
+        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 40, random.uniform(0, 3), 30, (0, 255, 0, 215)))
+
+        c = pygame.sprite.spritecollide(self, e_group, 0)
+        if c:
+            self.sprite_groups.particlegroup.add(GIF(c[0].rect.size, EXPLOSIONIMGS[:], c[0].rect.center, deg=135))
+            c[0].rdamage(self.type, self.dmg)
+            for i in range(20):
+                self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, 15, random.uniform(10, 20), 200, (0,255,0,170)))
+            self.kill()
+            return
+
+        if self.time <= 0:
+            self.kill()
+
+        self.time -= 1
+
 class HealBullet(Basic_sprite):
     def __init__(self, image, pos, speed, aim, sprite_groups, dmg=10, type=['heal'], time=90):
         super().__init__(image, pos)
@@ -1180,7 +1214,185 @@ class Enemy_SXZ(Basic_sprite):
         else:
             self.attacking = True
             self.common_att()
+
+class Enemy_GOD_LEFTHAND(Basic_sprite):
+    def __init__(self, image, pos, sprite_groups:Groups, hp=100, mp=100, san=100):
+        super().__init__(image, (900, 950))
+
+        # 数值初始化
+        self.hp = hp
+        self.maxhp = hp
+        self.mp = 0
+        self.maxmp = mp
+        self.mprecovery = 0.4
+        self.san = san
+        self.maxsan = san
+        self.sanrecovery = 0.5
+        self.attack = 30
+        self.overwhelmed = False
+        self.attacking = False
+
+        self.speed = 20
+
+        #重力常数
+        self.v_y = 0
+
+        # 被击中和冷却时间:用于呈现击中效果
+        self.hit = False
+        self.hittime = 15
+
+        # 图层初始化
+        self.image = image.copy()
+        self.image.convert_alpha()
+
+        # 击中效果初始化
+        self.hitsurf = image.copy()
+        self.hitsurf.convert_alpha()
+        surf = pygame.surface.Surface(self.image.get_size()).convert_alpha()
+        surf.fill((255, 0, 0, 125))
+        self.hitsurf.blit(surf, (0, 0))
+        self.hitsurf.set_colorkey((255, 0, 0, 125))
+
+        # 位置初始化
+        self.rect = self.image.get_rect()
+        self.rect.center = pos
+
+        # 组初始化
+        self.sprite_groups = sprite_groups
+
+        #数值
+        self.COMMONATT_MP = self.maxmp/36
+
+    def rdamage(self, type, ammo):
+        '''接受伤害'''
+
+        if self.hp > 0:
+
+            # 扣除血量
+            if 'hp' in type:
+                self.hp -= ammo
+                if self.hp <= 0:
+                    self.sprite_groups.damagerender.add('R.I.P', self.rect.center,(255, 0, 0), 60, 50)
+                else:
+                    self.sprite_groups.damagerender.add(ammo, self.rect.center, (255, 0, 0), 60, 30)
+
+            # 扣除精神值
+            if 'san' in type:
+                self.san -= ammo
+                if self.san <= 0:
+                    self.san = 0
+                    self.overwhelmed = True
+                    self.sprite_groups.damagerender.add('破防了!', self.rect.center,(255, 255, 0), 60, 50)
+                else:
+                    self.sprite_groups.damagerender.add(ammo, self.rect.center,(255, 255, 0), 60, 20)
+
+            if 'heal' in type:
+                self.hp += ammo
+                self.sprite_groups.damagerender.add('+'+str(ammo), self.rect.center,(0, 255, 0), 60, 50)
+
+        self.hit = True
+
+    def update(self, surf: pygame.surface.Surface):
+        '''更新函数'''
+        
+        #调用AI
+        self.AI()
+
+        #数值判断
+        if self.hp > self.maxhp:
+            self.hp = self.maxhp
+        if (self.san < self.maxsan) and self.overwhelmed:
+            self.san += self.sanrecovery
+        elif self.san >= self.maxsan:
+            self.san = self.maxsan
+            self.overwhelmed = False
+        if self.mp > self.maxmp:
+            self.mp = self.maxmp
+
+        # 显示
+        if self.hit or self.hp <= 0:
+            # 死亡时翻转
+            if self.hp <= 0:
+                s = pygame.transform.rotate(self.hitsurf, 90)
+                s.set_colorkey((255, 0, 0, 125))
+                surf.blit(s, self.rect)
+            else:
+                surf.blit(self.hitsurf, self.rect)
+
+            # 击中时间
+            self.hittime -= 1
+            if self.hittime == 0:
+                self.hittime = 15
+                self.hit = False
+
+                # 死亡特效
+                if self.hp <= 0:
+                    self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
+                    for i in range(250):
+                        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, random.randint(5, 75), speed=random.random()*2, size=random.uniform(25, 50), colour=(255, 0, 0, 150)))
+                    self.kill()
+                    return
+        # 正常时
+        else:
+            surf.blit(self.image, self.rect)
+
+        self.mp += self.mprecovery
+
+        miny = self.sprite_groups.playergroup.sprites()[0].rect.top
+        if self.rect.bottom >= miny:
+            self.rect.bottom = miny
+            self.exact_pos[1] = miny - self.rect.height/2
+
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.exact_pos[0] = self.rect.width/2
+        elif self.rect.right >= 1800:
+            self.rect.right = 1800
+            self.exact_pos[0] = 1800 - self.rect.width/2
+
+        # 状态条更新
+        hpbarpos = [self.rect.topleft[0], self.rect.topleft[1]-7]
+        hpbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (hpbarpos, hpbarsize), 1)
+        pygame.draw.rect(surf, (255, 0, 0), ((hpbarpos[0]+1, hpbarpos[1]+1), ((hpbarsize[0]-2)*self.hp/self.maxhp, hpbarsize[1]-2)))
+
+        mpbarpos = [self.rect.topleft[0], self.rect.topleft[1]-14]
+        mpbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (mpbarpos, mpbarsize), 1)
+        pygame.draw.rect(surf, (0, 0, 255), ((mpbarpos[0]+1, mpbarpos[1]+1), ((mpbarsize[0]-2)*self.mp/self.maxmp, mpbarsize[1]-2)))
+
+        sanbarpos = [self.rect.topleft[0], self.rect.topleft[1]-21]
+        sanbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (sanbarpos, sanbarsize), 1)
+        pygame.draw.rect(surf, (255, 255, 0), ((sanbarpos[0]+1, sanbarpos[1]+1), ((sanbarsize[0]-2)*self.san/self.maxsan, sanbarsize[1]-2)))
+
+    def common_att(self, deg):
+        '''普通攻击'''
+        if not self.overwhelmed:
+            if (self.mp >= self.COMMONATT_MP) and self.attacking:
+                self.mp -= self.COMMONATT_MP
+                self.sprite_groups.enemybulletgroup.add(EnemyBullet_lefthand(self.rect.center, 20, deg, self.sprite_groups, self.attack, ['hp']))
     
+    def AI(self):
+        '''自动判断攻击'''
+        if self.mp >= self.maxmp:
+            self.attacking = True
+        elif self.attacking and (self.mp < self.COMMONATT_MP):
+            self.attacking = False
+        for i in range(0, 360, 10):
+            self.common_att(i)
+
+        self.aim = self.sprite_groups.playergroup.sprites()[0].rect.center
+        d = get_distance(self.rect.center, self.aim)
+        if d >= 300:
+            self.move_to_aim((self.aim[0], self.aim[1] - 100))
+        else:
+            self.deg = - get_degree(self.rect.center, self.aim)
+            self.movef()
+        
+
+        
+
 # -------------------------------------
 
 pygame.init()
@@ -1209,6 +1421,7 @@ level = 0
 
 ENEMYIMG_CH = pygame.image.load(".\\images\\figure\\CH.png").convert_alpha()
 ENEMYIMG_SXZ = pygame.image.load(".\\images\\figure\\SXZ.png").convert_alpha()
+ENEMYIMG_LEFTHAND = pygame.image.load(".\\images\\figure\\lefthand.png").convert_alpha()
 bfont = pygame.font.SysFont('simhei', 50)
 BULLETIMG = bfont.render('啊对对对', 1, (255,255,255))
 FIREIMG = pygame.surface.Surface((1, 1))
@@ -1243,9 +1456,10 @@ kleft = False
 kright = False
 
 rounds = {
-    1 : [Enemy_SXZ(ENEMYIMG_SXZ, (0, 0), groups, 333)],
-    2 : [Enemy_CH(ENEMYIMG_CH, (17, 300), groups, 333)],
-    3 : [Enemy_CH(ENEMYIMG_CH, (170, 300), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 170), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 430), groups, 333)]
+    1 : [Enemy_GOD_LEFTHAND(ENEMYIMG_LEFTHAND, (0, 0), groups, 333)],
+    2 : [Enemy_SXZ(ENEMYIMG_SXZ, (0, 0), groups, 333)],
+    3 : [Enemy_CH(ENEMYIMG_CH, (17, 300), groups, 333)],
+    4 : [Enemy_CH(ENEMYIMG_CH, (170, 300), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 170), groups, 333), Enemy_CH(ENEMYIMG_CH, (220, 430), groups, 333)]
 }
 
 while running:
