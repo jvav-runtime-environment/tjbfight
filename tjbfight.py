@@ -62,7 +62,8 @@ def get_mouse_pos():
 def get_spawn_enemy(pos):
     return random.choice([
             Enemy_CH(ENEMYIMG_CH, pos, groups, hp=333),
-            Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333)
+            Enemy_SXZ(ENEMYIMG_SXZ, pos, groups, 333),
+            Enemy_GOD_LEFTHAND(ENEMYIMG_LEFTHAND, pos, groups, 333)
             ])
 
 def change_round(pos):
