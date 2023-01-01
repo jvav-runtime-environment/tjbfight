@@ -487,7 +487,7 @@ class Enemy_CH(Basic_sprite):
         self.hitsurf.blit(surf, (0, 0))
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
-        self.maxhp = int(math.sqrt(level)) * self.maxhp
+        self.maxhp = (level / 5) * self.maxhp
         screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
@@ -1381,7 +1381,7 @@ class Enemy_SXZ(Basic_sprite):
         self.hitsurf.blit(surf, (0, 0))
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
-        self.maxhp = int(math.sqrt(level)) * self.maxhp
+        self.maxhp = (level / 5) * self.maxhp
         screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
@@ -1663,7 +1663,7 @@ class Enemy_GOD_LEFTHAND(Basic_sprite):
         self.hitsurf.blit(surf, (0, 0))
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
-        self.maxhp = int(math.sqrt(level)) * self.maxhp
+        self.maxhp = (level / 5) * self.maxhp
         screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
