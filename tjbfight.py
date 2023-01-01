@@ -1809,7 +1809,7 @@ FIREIMG = pygame.surface.Surface((1, 1))
 FIREIMG.fill((0,0,0))
 
 LIST = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ','μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ']
-GRAVITY = 1
+GRAVITY = 4
 EXPLOSIONIMGS = [pygame.image.load('.\\images\\sweep\\sweep0.png').convert_alpha(),
                  pygame.image.load('.\\images\\sweep\\sweep1.png').convert_alpha(),
                  pygame.image.load('.\\images\\sweep\\sweep2.png').convert_alpha(),
