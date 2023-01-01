@@ -1798,7 +1798,7 @@ enemybullets = pygame.sprite.Group()
 #useableparticles = pygame.sprite.Group()
 
 # ---常量定义---
-level = 1
+level = 0
 
 ENEMYIMG_CH = pygame.image.load(".\\images\\figure\\CH.png").convert_alpha()
 ENEMYIMG_SXZ = pygame.image.load(".\\images\\figure\\SXZ.png").convert_alpha()
