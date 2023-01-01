@@ -1927,7 +1927,7 @@ while running:
         window.blit(screenfont.render('当前等级:'+str(level), 1, (255,255,255)), (0,0))
 
 
-    pygame.draw.rect(window, (255, 0, 0), ((0, SCREEN_HEIGHT-20), (SCREEN_WIDTH*screenhpbar_hp/screenhpbar_max, 20)))
+    pygame.draw.rect(window, (255, 0, 0), ((0, 0), (SCREEN_WIDTH*screenhpbar_hp/screenhpbar_max, 20)))
 
     pygame.display.flip()
 
