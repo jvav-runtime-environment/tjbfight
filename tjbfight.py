@@ -531,7 +531,8 @@ class Enemy_CH(Basic_sprite):
 
                 # 死亡特效
                 if self.hp <= 0:
-                    self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
+                    for i in range(int(level/5)):
+                        self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
                     for i in range(250):
                         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, random.randint(5, 75), speed=random.random()*2, size=random.uniform(25, 50), colour=(255, 0, 0, 150)))
                     self.kill()
@@ -1423,7 +1424,8 @@ class Enemy_SXZ(Basic_sprite):
 
                 # 死亡特效
                 if self.hp <= 0:
-                    self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
+                    for i in range(int(level/5)):
+                        self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
                     for i in range(250):
                         self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, random.randint(5, 75), speed=random.random()*2, size=random.uniform(25, 50), colour=(255, 0, 0, 150)))
                     self.kill()
