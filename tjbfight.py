@@ -477,8 +477,6 @@ class Enemy_CH(Basic_sprite):
 
     def boss(self):
         global screenhpbar_max
-
-        screenhpbar_max = self.maxhp
         self.maxmp = self.maxmp * 2
         self.mprecovery = 2
         self.image = pygame.transform.scale2x(self.image)
@@ -490,6 +488,7 @@ class Enemy_CH(Basic_sprite):
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
         self.maxhp = int(math.sqrt(level)) * self.maxhp
+        screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
         self.speed = 15
@@ -600,7 +599,6 @@ class Enemy_CH(Basic_sprite):
                 self.mp -= self.COMMONATT_MP
                 self.sprite_groups.enemybulletgroup.add(EnemyBullet_ch(BULLETIMG, self.rect.center, self.attack, player.rect.center, self.sprite_groups, self.attack, ['hp', 'san']))
    
-
 
 # ---GIF类---
 
@@ -1373,7 +1371,6 @@ class Enemy_SXZ(Basic_sprite):
     def boss(self):
         global screenhpbar_max
 
-        screenhpbar_max = self.maxhp
         self.maxmp = self.maxmp * 2
         self.mprecovery = 0.6
         self.image = pygame.transform.scale2x(self.image)
@@ -1385,6 +1382,7 @@ class Enemy_SXZ(Basic_sprite):
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
         self.maxhp = int(math.sqrt(level)) * self.maxhp
+        screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
         self.update = self.boss_update
@@ -1655,7 +1653,6 @@ class Enemy_GOD_LEFTHAND(Basic_sprite):
     def boss(self):
         global screenhpbar_max
 
-        screenhpbar_max = self.maxhp
         self.maxmp = self.maxmp * 2
         self.mprecovery = 2
         self.image = pygame.transform.scale2x(self.image)
@@ -1667,6 +1664,7 @@ class Enemy_GOD_LEFTHAND(Basic_sprite):
         self.hitsurf.set_colorkey((255, 0, 0, 125))
         self.rect.size = (self.rect.width*2,self.rect.height*2)
         self.maxhp = int(math.sqrt(level)) * self.maxhp
+        screenhpbar_max = self.maxhp
         self.hp = self.maxhp
         self.attack = int(self.attack * 1.5)
         self.attack_time = 0
@@ -1800,7 +1798,7 @@ enemybullets = pygame.sprite.Group()
 #useableparticles = pygame.sprite.Group()
 
 # ---常量定义---
-level = 0
+level = 4
 
 ENEMYIMG_CH = pygame.image.load(".\\images\\figure\\CH.png").convert_alpha()
 ENEMYIMG_SXZ = pygame.image.load(".\\images\\figure\\SXZ.png").convert_alpha()
@@ -1811,7 +1809,7 @@ FIREIMG = pygame.surface.Surface((1, 1))
 FIREIMG.fill((0,0,0))
 
 LIST = ['α', 'β', 'γ', 'δ', 'ε', 'ζ', 'η', 'θ', 'ι', 'κ', 'λ','μ', 'ν', 'ξ', 'ο', 'π', 'ρ', 'σ', 'τ', 'υ', 'φ', 'χ', 'ψ']
-GRAVITY = 5
+GRAVITY = 1
 EXPLOSIONIMGS = [pygame.image.load('.\\images\\sweep\\sweep0.png').convert_alpha(),
                  pygame.image.load('.\\images\\sweep\\sweep1.png').convert_alpha(),
                  pygame.image.load('.\\images\\sweep\\sweep2.png').convert_alpha(),
