@@ -517,7 +517,7 @@ class Player(Basic_sprite):
         self.san = 100
         self.maxsan = 100
         self.sanrecovery = 0.5
-        self.attack = 10
+        self.attack = 1000
         self.COMMONATT_MP = 5
         self.SANATT_MP = 1
         self.PARRY_CD = 16
@@ -1224,6 +1224,112 @@ class Enemy_SXZ(Basic_sprite):
             self.attacking = True
             self.common_att()
 
+    def boss(self):
+        global screenhpbar_max
+
+        screenhpbar_max = self.maxhp
+        self.maxmp = self.maxmp * 2
+        self.mprecovery = 0.6
+        self.image = pygame.transform.scale2x(self.image)
+        self.hitsurf = self.image.copy()
+        self.hitsurf.convert_alpha()
+        surf = pygame.surface.Surface(self.image.get_size()).convert_alpha()
+        surf.fill((255, 0, 0, 125))
+        self.hitsurf.blit(surf, (0, 0))
+        self.hitsurf.set_colorkey((255, 0, 0, 125))
+        self.rect.size = (self.rect.width*2,self.rect.height*2)
+        self.hp = int(math.sqrt(level)) * self.hp
+        self.attack = int(self.attack * 1.5)
+        self.update = self.boss_update
+
+    def boss_update(self, surf: pygame.surface.Surface):
+        '''更新函数'''
+        global screenhpbar_hp
+
+        #调用AI
+        self.AI()
+
+        #数值判断
+        if self.hp > self.maxhp:
+            self.hp = self.maxhp
+        if (self.san < self.maxsan) and self.overwhelmed:
+            self.san += self.sanrecovery
+        elif self.san >= self.maxsan:
+            self.san = self.maxsan
+            self.overwhelmed = False
+        if self.mp > self.maxmp:
+            self.mp = self.maxmp
+
+        # 显示
+        if self.hit or self.hp <= 0:
+            # 死亡时翻转
+            if self.hp <= 0:
+                s = pygame.transform.rotate(self.hitsurf, 90)
+                s.set_colorkey((255, 0, 0, 125))
+                surf.blit(s, self.rect)
+            else:
+                surf.blit(self.hitsurf, self.rect)
+
+            # 击中时间
+            self.hittime -= 1
+            if self.hittime == 0:
+                self.hittime = 15
+                self.hit = False
+
+                # 死亡特效
+                if self.hp <= 0:
+                    self.sprite_groups.enemybulletgroup.add(HealBullet(self.image, self.rect.center, 10, player.rect.center, self.sprite_groups, int(self.maxhp*0.5)))
+                    for i in range(250):
+                        self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), self.rect.center, random.randint(5, 75), speed=random.random()*2, size=random.uniform(25, 50), colour=(255, 0, 0, 150)))
+                    self.kill()
+                    return
+        # 正常时
+        else:
+            surf.blit(self.image, self.rect)
+
+        self.mp += self.mprecovery
+
+        for i in range(3):
+            r_pos = (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom))
+            self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), r_pos, random.randint(5, 75), 0, random.random()*50, colour=(100, 0, 170, 150)))
+
+        self.v_y += GRAVITY
+        if self.rect.bottom >= 950:
+            self.rect.bottom = 950
+            self.exact_pos[1] = 950 - self.rect.height/2
+            self.v_y = 0
+        if 950 - self.rect.bottom < self.v_y:
+            self.rect.bottom = 950
+            self.exact_pos[1] = 950 - self.rect.height/2
+            self.v_y = 0
+        else:
+            self.rect.centery += self.v_y
+
+        if self.rect.left <= 0:
+            self.rect.left = 0
+            self.exact_pos[0] = self.rect.width/2
+        elif self.rect.right >= 1800:
+            self.rect.right = 1800
+            self.exact_pos[0] = 1800 - self.rect.width/2
+
+        # 状态条更新
+        hpbarpos = [self.rect.topleft[0], self.rect.topleft[1]-7]
+        hpbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (hpbarpos, hpbarsize), 1)
+        pygame.draw.rect(surf, (255, 0, 0), ((hpbarpos[0]+1, hpbarpos[1]+1), ((hpbarsize[0]-2)*self.hp/self.maxhp, hpbarsize[1]-2)))
+
+        mpbarpos = [self.rect.topleft[0], self.rect.topleft[1]-14]
+        mpbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (mpbarpos, mpbarsize), 1)
+        pygame.draw.rect(surf, (0, 0, 255), ((mpbarpos[0]+1, mpbarpos[1]+1), ((mpbarsize[0]-2)*self.mp/self.maxmp, mpbarsize[1]-2)))
+
+        sanbarpos = [self.rect.topleft[0], self.rect.topleft[1]-21]
+        sanbarsize = [self.image.get_width(), 7]
+        pygame.draw.rect(surf, (0, 0, 0), (sanbarpos, sanbarsize), 1)
+        pygame.draw.rect(surf, (255, 255, 0), ((sanbarpos[0]+1, sanbarpos[1]+1), ((sanbarsize[0]-2)*self.san/self.maxsan, sanbarsize[1]-2)))
+
+        screenhpbar_hp = self.hp
+
 class Enemy_GOD_LEFTHAND(Basic_sprite):
     def __init__(self, image, pos, sprite_groups:Groups, hp=100, mp=100, san=100):
         super().__init__(image, (900, 950))
@@ -1465,6 +1571,7 @@ class Enemy_GOD_LEFTHAND(Basic_sprite):
             # 正常时
             else:
                 surf.blit(self.image, self.rect)
+            
             for i in range(10):
                 r_pos = (random.randint(self.rect.left, self.rect.right), random.randint(self.rect.top, self.rect.bottom))
                 self.sprite_groups.particlegroup.add(Particle(random.randint(0, 360), r_pos, random.randint(5, 75), 0, random.random()*50, colour=(100, 0, 170, 150)))
