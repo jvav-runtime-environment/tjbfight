@@ -604,10 +604,9 @@ class Enemy_CH(Basic_sprite):
 # ---GIF类---
 
 class GIF(pygame.sprite.Sprite):
-    def __init__(self, size, imgs, center, deg=0, life=12):
+    def __init__(self, size, imgs, center, deg=0, life=12, loop = False):
         super().__init__()
 
-        # 图像加载
         self.images = imgs
         for i in self.images:
             self.images[self.images.index(i)] = pygame.transform.rotate(i, deg)
@@ -615,25 +614,39 @@ class GIF(pygame.sprite.Sprite):
             self.images[self.images.index(i)] = pygame.transform.scale(i, size)
         
         self.image = self.images[0]
+        
+        self.rect = self.image.get_rect(center=center)
 
         self.deg = deg
         self.size = size
-        self.rect = self.image.get_rect(center=center)
+        self.mlife = life
         self.life = life
+        self.loop = loop
 
         self.d = self.life/len(self.images)
-
-    def update(self, surf: pygame.surface.Surface):
-        '''更新函数'''
-
-        # 绘制
+        
+    def draw(self, surf: pygame.surface.Surface, update = True):
+        
         surf.blit(self.images[int(self.life / self.d)-1], self.rect)
+        if update:
+            self.update()
 
-        # 计时
+    def update(self):
         self.life = self.life - 1
+        
         if self.life <= 1:
-            self.kill()
+            if self.loop:
+                self.life = self.mlife
+            else:
+                self.kill()
 
+    def rotate(self, deg):
+        for i in self.images:
+            self.images[self.images.index(i)] = pygame.transform.rotate(i, deg)
+            
+    def scale(self, size):
+        for i in self.images:
+            self.images[self.images.index(i)] = pygame.transform.scale(i, size)
 
 # ---GIF加载器---
 

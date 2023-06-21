@@ -1,17 +1,16 @@
 import pygame
-import math
-import pyganim
+import GIF
 import SpriteGroups
 
 class BasicSprite(pygame.sprite.Sprite):
-    def __init__(self, imgs_moving, imgs_attacking, imgs_hitted, pos, hp = 100, mp = 100, san = 100, atk = 10):
+    def __init__(self, imgs_moving, imgs_attacking, imgs_hitted, pos, hp = 100, mp = 100, san = 100, atk = 10, spin_lock = True):
         super().__init__()
         
         self.image = imgs_moving[0]
         
-        animation_moving_time = 100
+        '''animation_moving_time = 100
         animation_attacking_time = 100
-        animation_hitted_time = 100
+        animation_hitted_time = 100'''
                 
         imgs_hitted_t = []
         hurt_img = pygame.surface.Surface(imgs_hitted[0].get_size())
@@ -22,13 +21,9 @@ class BasicSprite(pygame.sprite.Sprite):
             
         imgs_hitted = imgs_hitted_t
         
-        self.animation_hitted = pyganim.PygAnimation((map(lambda x,y : (x,y), imgs_hitted, animation_hitted_time*len(imgs_hitted))))
-        self.animation_moving = pyganim.PygAnimation((map(lambda x,y : (x,y), imgs_moving, animation_moving_time*len(imgs_moving))))
-        self.animation_attacking = pyganim.PygAnimation((map(lambda x,y : (x,y), imgs_attacking, animation_attacking_time*len(imgs_attacking))))
-    
-        self.animation_moving.play()
-        self.animation_attacking.stop()
-        self.animation_hitted.stop()
+        self.animation_hitted = GIF.GIF(imgs_hitted)
+        self.animation_moving = GIF.GIF(imgs_moving)
+        self.animation_attacking = GIF.GIF(imgs_attacking)
         
         self.rect = self.image.get_rect(center=pos)
         
@@ -38,7 +33,9 @@ class BasicSprite(pygame.sprite.Sprite):
         self.friction_factor = 0.5
         self.speed = pygame.Vector2(0,0)
         self.deg = self.speed.angle_to((1,0))
+        self.spin_lock = spin_lock
         self.exact_pos = pygame.Vector2(pos)
+        
         
         # 数值初始化
         self.hp = hp
@@ -61,9 +58,19 @@ class BasicSprite(pygame.sprite.Sprite):
 
     def draw(self, surf: pygame.surface.Surface):####!!!!!!!!!!!!!!!!!!!
         
-        if self.speed.length != 0:
-            self.animation_moving.rotate(self.deg)
-            self.animation_moving.blit(surf, self.rect)
+            if self.speed.x > 0:
+                if not self.spin_lock:
+                    self.animation_moving.rotate(self.deg)
+                self.animation_moving.draw(surf, self.rect)
+                
+            elif self.speed.x < 0:
+                self.animation_moving.flip()
+                if not self.spin_lock:
+                    self.animation_moving.rotate(self.deg)
+                self.animation_moving.draw(surf, self.rect)
+            
+            else:
+                surf.blit(self.image, self.rect)
 
     def move(self, tracking = False, aim = None, tracking_force = 0):
 
