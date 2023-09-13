@@ -1,8 +1,10 @@
-# TJBFight
+# TJBFight(不再维护)
 
 一个小游戏😁
 
 由pygame编写
+
+用Java重写的版本(未完全完成):https://github.com/jvav-runtime-environment/TJBFight-JavaRemake
 
 ## 操作:
 
