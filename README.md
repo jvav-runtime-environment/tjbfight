@@ -4,7 +4,7 @@
 
 由pygame编写
 
-用Java重写的版本(未完全完成):https://github.com/jvav-runtime-environment/TJBFight-JavaRemake
+用Java重写的版本(未完全完成):_敬请期待_
 
 ## 操作:
 
